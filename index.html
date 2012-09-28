@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml' lang='en'>
+  <head>
+    <meta charset='utf-8'/>
+    <title>Coremob Test Approach</title>
+    <script class='remove'>
+      var respecConfig = {
+          specStatus: "CG-DRAFT"
+      ,   shortName:  "coremob-testing-plan"
+      ,   editors: [
+                {   name:       "Tobie Langel"
+                ,   company:    "Facebook"
+                ,   companyURL: "http://facebook.com/" }
+          ]
+      ,   edDraftURI:   "http://tobie.github.com/coremob-test-approach"
+      ,   copyrightStart: 2012
+      ,   noIDLIn:      true
+      ,   wg:           "Core Mobile Web Platform Community Group"
+      ,   wgURI:        "http://www.w3.org/community/coremob/"
+      ,   wgPublicList: "public-coremob"
+      ,   wgPatentURI:  "XXX"
+      ,   isRecTrack:   false
+      ,   isNoTrack:    true
+      ,   format: 'markdown'
+      };
+    </script>
+ 
+  <script src="./respec-w3c-common-markdown-alpha.js" async class="remove"></script>
+  </head>
+    <body style="max-width:45em">
+      <section id='sotd'>
+        Development of this document happens on <a href='https://github.com/coremob/level-1-rec'>GitHub</a>. Please file well-scoped <a href='https://github.com/coremob/level-1-rec/issues'>issues</a> and send <a href='https://github.com/coremob/level-1-rec/pulls'>pull requests</a> directly on GitHub. Please send comments to the mailing list as described below.
+      </section>
+  
+      <section id='abstract'>
+        This document describes the testing plan for providing a test suite for the Coremob specification.
+      </section>
+
+      <section class='informative'>
+        Introduction
+        ------------
+        
+        As per it's [charter](http://www.w3.org/community/coremob/charter/), the Coremob CG is due to produce test suite for the specifications it publishes. Because Coremob specs do not create new technology but instead curates existing ones, the role of the CG is limited, in theory at least, to finding pre-existing test suites for each of the specifications it references and developing software which enables to run them all together. In practice however, many of the referenced specifications aren't properly tested and CG participants will either have to create tests for certain specifications themselves or unable the broader Web developer community to do so, notably via efforts like [Test the Web Forward](http://testthewebforward.org/).
+        
+        This document will therefore endeavor to look at these two aspects--the test runner and the actual test themselves--and provide guidance to the CG on how to best move forward.
+      </section>
+      
+      Terminology
+      -----------
+      
+      Testing _outside_ of the browser predates testing _within_ the browser by a number of years. Consequently, the architecture and terminology of testing wasn't really designed with the Web in mind. While Web pages provide a simple way to run tests in a clean environment, they also introduce a significant layer of technological complexity (they're asynchronous, and opaque to the test runner until loaded). They also really muddle concepts. Whereas in a standard programming environment the relationship between test and test suites are straightforward, on the Web, a test suite can be either a collection of pages or a collection of tests depending on who you're talking to. Similarly, test runners are exist both at the page level, where they iterate over tests (or sometimes, groups of tests), and at the top level, where they iterate over pages (or, you've guessed it, groups of pages).
+      
+      For the purpose of this document, the following terminology will be used.
+      
+      A <dfn title="testrunner">test runner</dfn> is a program which is able to run multiple, potentially nested <a title="testsuite">test suites</a> and collect the results of running these suites for display through a UI or further processing.
+      
+      A <dfn title="testsuite">test suite</dfn> consists of a collection of <a title="testpage">test pages</a> or of other, nested test suites.
+      
+      A <dfn title="testpage">test page</dfn> is a single HTML document and, optionally, additional resources such as images or CSS files. Test pages contain one or more <a title="test">tests</a>.
+      
+      A <dfn title="test">test</dfn> is a single JavaScript function. Its role is to setup the test environment, run a number of <a title="assertion">assertions</a>, report the result of running those assertions to a <a title="testframework">test framework</a>, and tear down its environment. Tests can be synchronous or asynchronous depending on the needs.
+      
+      An <dfn title="assertion">assertion</dfn> is the smallest building block of testing. It allows to verify predetermined conditions are met and throws an exception when that is not the case.
+      
+      A <dfn title="testframework">test framework</dfn> is a JavaScript program which is in charge of running the <a title="test">tests</a> found on a _single_ <a title="testpage">test page</a> and reporting the results of running these tests to the <a title="testrunner">test runner</a>. The W3C settled on using <dfn title="testharness.js">testharness.js</dfn> as its test framework of choice. testharness.js is [hosted on GitHub](https://github.com/jgraham/testharness.js/) and has [excellent documentation](http://darobin.github.com/test-harness-tutorial/docs/using-testharness.html).
+      
+      A test framework <dfn title="shim">shim</dfn> is a JavaScript program that enables tests written using a different <dfn title="testframework">test framework</dfn> than <a title="testharness.js">testharness.js</a> to run and report their results to the <a title="testrunner">test runner</a>.
+      
+      The <dfn title="jsonapi">W3C Test Suite Framework JSON API</dfn>'s essential role is to smooth out the somewhat chaotic organization of w3c-test.org, by providing a unified API for the <a title="testsuite">test suite</a> of each specification. It also enables posting the test result back to the W3C database. The API is [fully documented](http://w3c-test.org/framework/docs/api/).
+      
+      Developing a Test Runner
+      ------------------------
+      
+      This section concentrates on defining the requirement and potential solutions to the test runner.
+      
+      ### requirements
+      
+      We have two sets of requirements. Those stated in Coremob CG's [charter](http://www.w3.org/community/coremob/charter/) which are must-haves and those expressed during the F2F meetings which are nice-to-haves.
+      
+      #### Must-haves ####
+      
+      > The CG will compile accompanying test suites for each specification it releases. Where appropriate, the test suites will draw on pre-existing tests developed for the feature’s original specification. Otherwise, CG participants will endeavor to fill in the gaps. Since test case development may drive normative changes or clarifications into the original specifications, any new tests will be contributed back to the appropriate W3C (or non-W3C) group by their original author.
+      
+      With that in mind the CG has a single requirement to produce a test suite to accompany the Coremob 2012 specification.
+      
+      The CG MUST produce a test suite for [[COREMOB-2012]].
+      
+      The CG MUST produce a test framework that can run testharness.js based tests.
+      
+      #### Nice-to-Haves ####
+            
+      The CG MAY produce shims that allow non-W3C tests to be run and their results collected.
+      
+      The CG MAY produce a test framework that enables running W3C tests across different origins.
+      
+      The CG MAY produce a test framework that's able to run on a non public network.
+      
+      ### Proposed solutions ###
+      
+      We propose four solutions of increasing complexity.
+      
+      #### Host the test runner directly on w3c-test.org ####
+      
+      <img src="./img/coremob_1.png" width="471" height="517" alt="Diagram of option 1">
+      
+      1.  Test device navigates to w3c-test.org/coremob/runner/ which responds with the <a title=testrunner>test runner</a>.
+          
+      2.  The <a title=testrunner>test runner</a> queries the <a title="jsonapi">W3C JSON API</a> to obtain the URLs of the <a title=testpage>test pages</a> it wants to run.
+          
+      3.  The <a title=testrunner>runner</a> runs the <a title=testpage>test pages</a> one by one in an iframe.
+          
+      4.  Each <a title=testpage>test page</a> and its resources is fetched from the Mercurial repository hosted on w3c-test.org.
+          
+      5.  The <a title=testframework>test framework</a> included in the <a title=testpage>test page</a> updates the <a title=testrunner>test runner</a> with the result of running the <a title=testpage>test page</a>.
+          
+      6.  Once all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org and the W3C test server (via its <a title="jsonapi">JSON API</a>).
+          
+      7.  The results are publicly available on browserscope.org and w3c-test.org.
+      
+      ##### Pros #####
+      
+      - This solution satisfies all of our Must-have requirements.
+      - It is fast and simple to build as it consists of a simple client-side runner.
+      - There are no known issues.
+      - implies 
+      
+      ##### Cons #####
+      
+      - This solution does not satisfy most of our Nice-to-Have requirements.
+      - Including tests for non W3C specification implies adding them directly to the W3C repository.
+      
+      #### Host the test runner on coremob.org but run the tests from w3c-test.org ####
+      
+      <img src="img/coremob_2.png" width="482" height="507" alt="Coremob 2">
+      
+      1.  Test device navigates to test.coremob.org which responds with the <a title=testrunner>test runner</a>.
+          
+      2.  The <a title=testrunner>test runner</a> queries the <a title="jsonapi">W3C JSON API</a> using JSON-P to obtain the URLs of the <a title=testpage>test pages</a> it wants to run.
+          
+      3.  The <a title=testrunner>runner</a> runs the <a title=testpage>test pages</a> one by one in an iframe.
+          
+      4.  Each <a title=testpage>test page</a> and its resources is fetched from the Mercurial repository hosted on w3c-test.org. Other, non W3C tests can also run in the iframe, for example, [test262](http://test262.ecmascript.org/), the conformance test suite for [[ECMA-262-51]].
+          
+      5.  The <a title=testframework>test framework</a> included in the <a title=testpage>test page</a> updates the <a title=testrunner>test runner</a> with the result of running the <a title=testpage>test page</a> through the [[POSTMSG]] api.
+          <p class=issue>This step requires some changes to the W3C repository and/or to <a title="testharness.js">testharness.js</a> itself in order to enable cross-origin communication. Given the [wide support](http://caniuse.com/#feat=x-doc-messaging) for [[POSTMSG]] it seems like a reasonable request to make. It also seems W3C could avoid having to whitelist third party <a title=testrunner>runners</a> because the <a title=testpage>test page</a> hosted on the w3c-test.org would only emit test results and would not receive any messages.</p>
+          
+      6.  Once all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org and the W3C test server (via its <a title="jsonapi">JSON API</a>).
+          
+      7.  The results are publicly available on browserscope.org and w3c-test.org.
+      
+      ##### Pros #####
+      
+      - Satisfies all of our Must-have requirements and some of our Nice-to-Have ones too.
+      - Relatively easy to implement.
+      - Could enable pulling running tests on other domains in a breeze, provided they sent test results using [[POSTMSG]] and we agreed on a format for test results, e.g. [TAP](http://testanything.org/wiki/index.php/Main_Page).
+      
+      ##### Cons #####
+      
+      - requires modification of W3C code to enable cross-origin communication.
+      - doesn't enable testing of unreleased devices on closed networks.
+      
+      #### Host the test runner on coremob.org, use an updated version of the W3C API to run test tests locally ####
+      
+      There is an essential problem there. The current API doesn't provide us with the necessary data to do this.
+      
+      ##### Pros #####
+      
+      - satisfies all of our Must-have requirements
+      
+      ##### Cons #####
+      
+      - Some uncertainty as to how that can be done given the SOP problem
+      - does not satisfy all of our Nice-to-Have requirements.
+      
+      
+      
+      
+      
+      
+      #### Build a custom solution ####
+      
+      ##### Pros #####
+      
+      - satisfies all requirements
+      
+      ##### Cons #####
+      
+      - Maintaing cost which the W3C API shield us from.
+      - does not satisfy all of our Nice-to-Have requirements.
+      
+      
+      ### Conclusions ###
+      
+      I would suggest building option 1 or 3.
+      
+      To decide between the two, it depends on resources available and motivation of W3C to provide (and maintain) this feature into their API.
+      
+      
+      Results
+      -------
+      
+      
+      
+      Tests
+      -----
+      
+      - look at the existing W3C test suites and assess the test coverage of
+      specs referenced by [[COREMOB-2012]],
+      - identify the gaps and prioritize them,
+      - involve developers to help close the gap where it matters most, notably
+      by piggybacking on Test The Web Forward and similar efforts.
+      
+  </body>
+</html>
