@@ -36,14 +36,12 @@
         This document describes the testing plan for providing a test suite for the Coremob specification.
       </section>
 
-      <section class='informative'>
-        Introduction
-        ------------
-        
-        As per it's [charter](http://www.w3.org/community/coremob/charter/), the Coremob CG is due to produce test suite for the specifications it publishes. Because Coremob specs do not create new technology but instead curates existing ones, the role of the CG is limited, in theory at least, to finding pre-existing test suites for each of the specifications it references and developing software which enables to run them all together. In practice however, many of the referenced specifications aren't properly tested and CG participants will either have to create tests for certain specifications themselves or unable the broader Web developer community to do so, notably via efforts like [Test the Web Forward](http://testthewebforward.org/).
-        
-        This document will therefore endeavor to look at these two aspects--the test runner and the actual test themselves--and provide guidance to the CG on how to best move forward.
-      </section>
+      Introduction
+      ------------
+      
+      As per it's [charter](http://www.w3.org/community/coremob/charter/), the Coremob CG is due to produce test suite for the specifications it publishes. Because Coremob specs do not create new technology but instead curates existing ones, the role of the CG is limited, in theory at least, to finding pre-existing test suites for each of the specifications it references and developing software which enables to run them all together. In practice however, many of the referenced specifications don't have proper test suites yet and CG participants will either have to contribute tests themselves or enable the broader Web developer community to do so, notably via efforts like [Test the Web Forward](http://testthewebforward.org/).
+      
+      This document will therefore endeavor to look at these two aspects--the test runner and the actual test themselves--and provide guidance to the CG on how to best move forward.
       
       Terminology
       -----------
@@ -68,16 +66,14 @@
       
       The <dfn title="jsonapi">W3C Test Suite Framework JSON API</dfn>'s essential role is to smooth out the somewhat chaotic organization of w3c-test.org, by providing a unified API to find the corresponding <a title="testsuite">test suite</a> of each specification. It also enables posting the test result back to the W3C database. The API is [fully documented](http://w3c-test.org/framework/docs/api/).
       
-      Developing a Test Runner
-      ------------------------
+      Requirements
+      ------------
       
       This section concentrates on defining the requirement and potential solutions to the test runner.
       
-      ### requirements
-      
       We have two sets of requirements. Those stated in Coremob CG's [charter](http://www.w3.org/community/coremob/charter/) which are must-haves and those expressed during the F2F meetings which are nice-to-haves.
       
-      #### Must-haves ####
+      ### Must-haves ###
       
       > The CG will compile accompanying test suites for each specification it releases. Where appropriate, the test suites will draw on pre-existing tests developed for the feature’s original specification. Otherwise, CG participants will endeavor to fill in the gaps. Since test case development may drive normative changes or clarifications into the original specifications, any new tests will be contributed back to the appropriate W3C (or non-W3C) group by their original author.
       
@@ -87,19 +83,32 @@
       
       The CG MUST produce a test framework that can run testharness.js based tests.
       
-      #### Nice-to-Haves ####
-            
+      ### Nice-to-Haves ###
+      
       The CG MAY produce shims that allow non-W3C tests to be run and their results collected.
       
       The CG MAY produce a test framework that enables running W3C tests across different origins.
       
       The CG MAY produce a test framework that's able to run on a non public network.
       
-      ### Proposed solutions ###
+      Tests
+      -----
+      
+      - look at the existing W3C test suites and assess the test coverage of
+      specs referenced by [[COREMOB-2012]],
+      - identify the gaps and prioritize them,
+      - involve developers to help close the gap where it matters most, notably
+      by piggybacking on Test The Web Forward and similar efforts,
+      - identify existing test suites outside of W3C specifications (HTTP, ECMAScript).
+      - assess coverage
+      - assess compatibility of runner with our different proposed options (TODO linkto section)
+      
+      Structure of the Test Runner
+      ----------------------------
       
       We propose four solutions of increasing complexity.
       
-      #### Host the test runner directly on w3c-test.org ####
+      ### Host the test runner directly on w3c-test.org ###
       
       <img src="./img/coremob_1.png" width="471" height="517" alt="Diagram of option 1">
       
@@ -117,19 +126,19 @@
           
       7.  The results are publicly available on browserscope.org and w3c-test.org.
       
-      ##### Pros #####
+      #### Pros ####
       
       - This solution satisfies all of our Must-have requirements.
       - It is fast and simple to build as it consists of a simple client-side runner.
       - There are no known issues.
       - implies 
       
-      ##### Cons #####
+      #### Cons ####
       
       - This solution does not satisfy most of our Nice-to-Have requirements.
       - Including tests for non W3C specification implies adding them directly to the W3C repository.
       
-      #### Host the test runner on coremob.org but run the tests from w3c-test.org ####
+      ### Host the test runner on coremob.org but run the tests from w3c-test.org ###
       
       <img src="img/coremob_2.png" width="482" height="507" alt="Coremob 2">
       
@@ -148,13 +157,13 @@
           
       7.  The results are publicly available on browserscope.org and w3c-test.org.
       
-      ##### Pros #####
+      #### Pros ####
       
       - Satisfies all of our Must-have requirements and some of our Nice-to-Have ones too.
       - Relatively easy to implement.
       - Could enable pulling running tests on other domains in a breeze, provided they sent test results using [[POSTMSG]] and we agreed on a format for test results, e.g. [TAP](http://testanything.org/wiki/index.php/Main_Page).
       
-      ##### Cons #####
+      #### Cons ####
       
       - requires modification of W3C code to enable cross-origin communication.
       - doesn't enable testing of unreleased devices on closed networks.
@@ -162,13 +171,13 @@
       
       
       
-      #### Host the test runner on coremob.org or locally, proxy all requests through it ####
+      ### Host the test runner on coremob.org or locally, proxy all requests through it ###
       
       There a number of alternative scenarios here depending on whether we prefer more code to run on the client or on the server. The basic idea stays the same, however: the URLs of the <a title=testpage>test pages</a> are fetched through the <a title="jsonapi">JSON API</a> and their content (and resources) proxied through a server-side component. This avoids same origin policy constraints and also allows running the <a title=testpage>test suite</a> inside of a closed network.
       
       Below are two example architecture for this. The first example targets the current use case we have with Coremob, that is, being able to host a publicly accessible <a title="testsuite">test suite</a>, run it and collect the results on browserscope.org or elsewhere. The second example caters for the needs of device manufactures or carriers, which want to test unreleased devices on a closed network.
       
-      ##### Example architecture of a publicly runnable implementation #####
+      #### Example architecture of a publicly runnable implementation ####
       
       <img src="img/coremob_3.png" width="516" height="511" alt="Coremob 3">
       
@@ -187,7 +196,7 @@
       7.  The results are publicly available on browserscope.org and w3c-test.org.
       
       
-      ##### Example architecture for an implementation hosted on a closed network #####
+      #### Example architecture for an implementation hosted on a closed network ####
       
       <img src="img/coremob_3_firewall.png" width="510" height="539" alt="Coremob 3 Firewall">
       
@@ -207,11 +216,11 @@
           
       8.  The results are only available locally.
       
-      ##### Pros #####
+      #### Pros ####
       
       - satisfies all of our Must-have requirements
       
-      ##### Cons #####
+      #### Cons ####
       
       - Some uncertainty as to how that can be done given the SOP problem
       - does not satisfy all of our Nice-to-Have requirements.
@@ -221,7 +230,7 @@
       
       
       
-      #### Build a custom solution ####
+      ### Build a custom solution ###
       
       This option completely forgoes the <a title="jsonapi">W3C JSON API</a> and goes directly for the W3C's repository. While this greatly simplifies the design, it puts the burden of understanding the structure of the W3C repository and keeping up with changes on us.
       
@@ -241,35 +250,30 @@
       
       6.  When all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org or elsewhere.
       
-      7.  The results are publicly available on browserscope.org or can be kept private if required..
+      7.  The results are publicly available on browserscope.org or can be kept private if required.
       
-      ##### Pros #####
+      #### Pros ####
       
       - satisfies all requirements
       
-      ##### Cons #####
+      #### Cons ####
       
       - Not relying on the <a title=jsonapi>JSON API</a> exposes us to maintenance costs.
       
-      ### Conclusions ###
+      Conclusion
+      ----------
       
+      To decide between the different solutions. it depends on resources available and motivation of W3C to provide (and maintain) certain features into their API.
       
-      To decide between the two, it depends on resources available and motivation of W3C to provide (and maintain) this feature into their API.
+      1. liaise with W3C about the different requirements we have for the <a title=jsonapi>JSON API</a>:
+         * support for cross-origin messages,
+         * support listing of <a title=testpage>test page</a> sub-resources.
       
+      2. Determine test coverage of W3C specs. Create a doc about this. Liaise with W3C.
       
-      Results
-      -------
+      3. Determine test coverage, licensing terms, and runner compat of non W3C specs. Notably test262.
       
-      
-      
-      Tests
-      -----
-      
-      - look at the existing W3C test suites and assess the test coverage of
-      specs referenced by [[COREMOB-2012]],
-      - identify the gaps and prioritize them,
-      - involve developers to help close the gap where it matters most, notably
-      by piggybacking on Test The Web Forward and similar efforts.
+      4. define CG participant resources to build runner.
       
   </body>
 </html>
