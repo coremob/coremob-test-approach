@@ -52,11 +52,11 @@
       
       For the purpose of this document, the following terminology will be used.
       
-      A <dfn title="testrunner">test runner</dfn> is a program which is able to run multiple, potentially nested <a title="testsuite">test suites</a> and collect the results of running these suites for display through a UI or further processing.
+      A <dfn title="testrunner">test runner</dfn> is a program which is able to run multiple, potentially nested <a title="testsuite">test suites</a> and collect the results of running these suites for display through a UI or further processing. It is composed of a client-side component written in JavaScript and of an optional server-side component.
       
       A <dfn title="testsuite">test suite</dfn> consists of a collection of <a title="testpage">test pages</a> or of other, nested test suites.
       
-      A <dfn title="testpage">test page</dfn> is a single HTML document and, optionally, additional resources such as images or CSS files. Test pages contain one or more <a title="test">tests</a>.
+      A <dfn title="testpage">test page</dfn> is a single HTML document and, optionally, additional resources such as images or CSS files. Test pages contain one or more <a title="test">tests</a>. They also reference a <a title=testframework>test framework</a> which auto-runs the test on page load.
       
       A <dfn title="test">test</dfn> is a single JavaScript function. Its role is to setup the test environment, run a number of <a title="assertion">assertions</a>, report the result of running those assertions to a <a title="testframework">test framework</a>, and tear down its environment. Tests can be synchronous or asynchronous depending on the needs.
       
@@ -103,17 +103,17 @@
       
       <img src="./img/coremob_1.png" width="471" height="517" alt="Diagram of option 1">
       
-      1.  Test device navigates to w3c-test.org/coremob/runner/ which responds with the <a title=testrunner>test runner</a>.
+      1.  The test device navigates to w3c-test.org/coremob/runner/ which responds with the <a title=testrunner>test runner</a>.
           
       2.  The <a title=testrunner>test runner</a> queries the <a title="jsonapi">W3C JSON API</a> to obtain the URLs of the <a title=testpage>test pages</a> it wants to run.
           
-      3.  The <a title=testrunner>runner</a> runs the <a title=testpage>test pages</a> one by one in an iframe.
+      3.  The <a title=testrunner>runner</a> then sequentially passes the URL of each <a title=testpage>test page</a> to the iframe.
           
-      4.  Each <a title=testpage>test page</a> and its resources is fetched from the Mercurial repository hosted on w3c-test.org.
+      4.  Each <a title=testpage>test page</a> and its resources is fetched from the Mercurial repository hosted on w3c-test.org and loaded into the iframe. This auto-runs the <a title=testframework>test framework</a>.
           
-      5.  The <a title=testframework>test framework</a> included in the <a title=testpage>test page</a> updates the <a title=testrunner>test runner</a> with the result of running the <a title=testpage>test page</a>.
+      5.  Once it has finished running the <a title=testpage>test page</a>, the <a title=testframework>test framework</a> updates the <a title=testrunner>test runner</a>.
           
-      6.  Once all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org and the W3C test server (via its <a title="jsonapi">JSON API</a>).
+      6.  When all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org and the W3C test server (via its <a title="jsonapi">JSON API</a>).
           
       7.  The results are publicly available on browserscope.org and w3c-test.org.
       
@@ -133,18 +133,18 @@
       
       <img src="img/coremob_2.png" width="482" height="507" alt="Coremob 2">
       
-      1.  Test device navigates to test.coremob.org which responds with the <a title=testrunner>test runner</a>.
+      1.  The test device navigates to test.coremob.org which responds with the <a title=testrunner>test runner</a>.
           
       2.  The <a title=testrunner>test runner</a> queries the <a title="jsonapi">W3C JSON API</a> using JSON-P to obtain the URLs of the <a title=testpage>test pages</a> it wants to run.
           
-      3.  The <a title=testrunner>runner</a> runs the <a title=testpage>test pages</a> one by one in an iframe.
+      3.  The <a title=testrunner>runner</a> then sequentially passes the URL of each <a title=testpage>test page</a> to the iframe.
           
-      4.  Each <a title=testpage>test page</a> and its resources is fetched from the Mercurial repository hosted on w3c-test.org. Other, non W3C tests can also run in the iframe, for example, [test262](http://test262.ecmascript.org/), the conformance test suite for [[ECMA-262-51]].
+      4.  In turn each <a title=testpage>test page</a> is fetched along with its resources from the Mercurial repository hosted on w3c-test.org and loaded into the iframe. Other, non W3C <a title=testpage>test pages</a> can also be run in the same way, provided the <a title=testframework>test framework</a> used is compatible with the <a title=testrunner>runner</a>, or can be made compatible via a <a title="shim">shim</a>. For example, [test262](http://test262.ecmascript.org/), the conformance test suite for [[ECMA-262-51]], would be run that way.
           
-      5.  The <a title=testframework>test framework</a> included in the <a title=testpage>test page</a> updates the <a title=testrunner>test runner</a> with the result of running the <a title=testpage>test page</a> through the [[POSTMSG]] api.
+      5.  Once it has finished running the <a title=testpage>test page</a>, the <a title=testframework>test framework</a> updates the <a title=testrunner>test runner</a> through the [[POSTMSG]] API.
           <p class=issue>This step requires some changes to the W3C repository and/or to <a title="testharness.js">testharness.js</a> itself in order to enable cross-origin communication. Given the [wide support](http://caniuse.com/#feat=x-doc-messaging) for [[POSTMSG]] it seems like a reasonable request to make. It also seems W3C could avoid having to whitelist third party <a title=testrunner>runners</a> because the <a title=testpage>test page</a> hosted on the w3c-test.org would only emit test results and would not receive any messages.</p>
           
-      6.  Once all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org and the W3C test server (via its <a title="jsonapi">JSON API</a>).
+      6.  When all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org and the W3C test server (via its <a title="jsonapi">JSON API</a>).
           
       7.  The results are publicly available on browserscope.org and w3c-test.org.
       
@@ -159,9 +159,53 @@
       - requires modification of W3C code to enable cross-origin communication.
       - doesn't enable testing of unreleased devices on closed networks.
       
-      #### Host the test runner on coremob.org, use an updated version of the W3C API to run test tests locally ####
       
-      There is an essential problem there. The current API doesn't provide us with the necessary data to do this.
+      
+      
+      #### Host the test runner on coremob.org or locally, proxy all requests through it ####
+      
+      There a number of alternative scenarios here depending on whether we prefer more code to run on the client or on the server. The basic idea stays the same, however: the URLs of the <a title=testpage>test pages</a> are fetched through the <a title="jsonapi">JSON API</a> and their content (and resources) proxied through a server-side component. This avoids same origin policy constraints and also allows running the <a title=testpage>test suite</a> inside of a closed network.
+      
+      Below are two example architecture for this. The first example targets the current use case we have with Coremob, that is, being able to host a publicly accessible <a title="testsuite">test suite</a>, run it and collect the results on browserscope.org or elsewhere. The second example caters for the needs of device manufactures or carriers, which want to test unreleased devices on a closed network.
+      
+      ##### Example architecture of a publicly runnable implementation #####
+      
+      <img src="img/coremob_3.png" width="516" height="511" alt="Coremob 3">
+      
+      1.  The test device navigates to test.coremob.org which responds with the <a title=testrunner>test runner</a>.
+          
+      2.  The <a title=testrunner>runner</a> queries the <a title="jsonapi">W3C JSON API</a> using JSON-P to obtain the URLs of the <a title=testpage>test pages</a> it wants to run. Note this could also be done by a server-side component.
+          
+      3.  The <a title=testrunner>runner</a> then sequentially passes the URL of each <a title=testpage>test page</a> as a query parameter of the iframe.
+          
+      4.  Instead of being fetched directly from the Mercurial repository hosted on w3c-test.org, each <a title=testpage>test page</a> along with its resources is instead proxied through test.coremob.org. Other, non W3C <a title=testpage>test pages</a> could also be similarly proxied and run.
+          
+      5.  Once it has finished running the proxied <a title=testpage>test page</a>, the <a title=testframework>test framework</a> updates the <a title=testrunner>test runner</a>.
+          
+      6.  Once all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org and the W3C test server (via its <a title="jsonapi">JSON API</a>).
+          
+      7.  The results are publicly available on browserscope.org and w3c-test.org.
+      
+      
+      ##### Example architecture for an implementation hosted on a closed network #####
+      
+      <img src="img/coremob_3_firewall.png" width="510" height="539" alt="Coremob 3 Firewall">
+      
+      1.  The test device navigates to a local server within the closed network.
+          
+      2.  This local server queries the <a title="jsonapi">W3C JSON API</a> and obtain the URLs of the <a title=testpage>test pages</a> it wants to run.
+      
+      3.  The local server responds to the test device with the <a title=testrunner>test runner</a> and the URLs of the proxied <a title=testpage>test pages</a> it wants to run.
+          
+      4.  The <a title=testrunner>runner</a> then sequentially passes the URL of each proxied <a title=testpage>test page</a> the iframe.
+          
+      5.  Instead of being fetched directly from the Mercurial repository hosted on w3c-test.org, each <a title=testpage>test page</a> along with its resources is instead proxied through the local server. Other, non W3C <a title=testpage>test pages</a> could also be similarly proxied and run.
+          
+      6.  Once it has finished running the proxied <a title=testpage>test page</a>, the <a title=testframework>test framework</a> updates the <a title=testrunner>test runner</a>.
+          
+      7.  When all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results back to the local server.
+          
+      8.  The results are only available locally.
       
       ##### Pros #####
       
@@ -179,19 +223,36 @@
       
       #### Build a custom solution ####
       
+      This option completely forgoes the <a title="jsonapi">W3C JSON API</a> and goes directly for the W3C's repository. While this greatly simplifies the design, it puts the burden of understanding the structure of the W3C repository and keeping up with changes on us.
+      
+      Other test repositories can be treated similarly.
+      
+      <img src="img/coremob_4.png" width="494" height="505" alt="Coremob 4">
+      
+      1.  The test repositories are copied to coremob.org on a regular basis (maybe via a cron job).
+      
+      2.  When test device navigates to coremob.org it responds with the <a title=testrunner>test runner</a> and the URLs of the <a title=testpage>test pages</a> it wants to run.
+      
+      3.  The <a title=testrunner>runner</a> sequentially passes the URL of each <a title=testpage>test page</a> to the iframe.
+      
+      4.  The <a title=testpage>test pages</a> and their resources are fetched directly from the locally cloned repository on coremob.org.
+      
+      5.  Once it has finished running the <a title=testpage>test page</a>, the <a title=testframework>test framework</a> updates the <a title=testrunner>test runner</a>.
+      
+      6.  When all <a title=testpage>test pages</a> have been run, the <a title=testrunner>test runner</a> transfers the results to browserscope.org or elsewhere.
+      
+      7.  The results are publicly available on browserscope.org or can be kept private if required..
+      
       ##### Pros #####
       
       - satisfies all requirements
       
       ##### Cons #####
       
-      - Maintaing cost which the W3C API shield us from.
-      - does not satisfy all of our Nice-to-Have requirements.
-      
+      - Not relying on the <a title=jsonapi>JSON API</a> exposes us to maintenance costs.
       
       ### Conclusions ###
       
-      I would suggest building option 1 or 3.
       
       To decide between the two, it depends on resources available and motivation of W3C to provide (and maintain) this feature into their API.
       
