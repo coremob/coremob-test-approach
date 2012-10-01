@@ -60,9 +60,11 @@
       
       An <dfn title="assertion">assertion</dfn> is the smallest building block of testing. It allows to verify predetermined conditions are met and throws an exception when that is not the case.
       
-      A <dfn title="testframework">test framework</dfn> is a JavaScript program which is in charge of running the <a title="test">tests</a> found on a _single_ <a title="testpage">test page</a> and reporting the results of running these tests to the <a title="testrunner">test runner</a>. The W3C settled on using <dfn title="testharness.js">testharness.js</dfn> as its test framework of choice. testharness.js is [hosted on GitHub](https://github.com/jgraham/testharness.js/) and has [excellent documentation](http://darobin.github.com/test-harness-tutorial/docs/using-testharness.html).
+      A <dfn title="testframework">test framework</dfn> is a JavaScript program which is in charge of running the <a title="test">tests</a> found on a _single_ <a title="testpage">test page</a> and reporting the results of running these tests to the <a title="testrunner">test runner</a>.
       
-      A test framework <dfn title="shim">shim</dfn> is a JavaScript program that enables tests written using a different <dfn title="testframework">test framework</dfn> than <a title="testharness.js">testharness.js</a> to run and report their results to the <a title="testrunner">test runner</a>.
+      <dfn title="testharness.js">testharness.js</dfn> is the W3C's <a title="testframework">test framework</a> of choice. The source code can be found on [GitHub](https://github.com/jgraham/testharness.js/) and [excellent documentation](http://darobin.github.com/test-harness-tutorial/docs/using-testharness.html) is available.
+      
+      A test framework <dfn title="shim">shim</dfn> is a JavaScript program that enables tests written using a different <a title="testframework">test framework</a> than <a title="testharness.js">testharness.js</a> to run and report their results to the <a title="testrunner">test runner</a>.
       
       The <dfn title="testserver">W3C test server</dfn> is a web server that is fully dedicated to testing. It hosts the <a title="w3ctestsuiteframework">W3C Test Suite Framework</a>. Its URL is [http://w3c-test.org](http://w3c-test.org).
       
